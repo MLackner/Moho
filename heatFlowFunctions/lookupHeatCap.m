@@ -17,7 +17,7 @@ T = round( m.temperature );
 Cp = m.material.heatCapacityValues;
 
 % Loop through all elements
-parfor i=1:numel(m.Vol)
+for i=1:numel(m.Vol)
     
     % Current temp
     temp = T(i);
