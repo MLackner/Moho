@@ -25,7 +25,7 @@ m = meshGen( base,npd,dims,a,b,c );
 T0 = 300;   % Kelvin
 
 % Set temperature range over which material properties are precalculated
-m.tempRange = 280:2000;    % only integer values allowed
+m.tempRange = 150:350;    % only integer values allowed
 m.temperature = ones( size( m.Vol ) )*T0;
 
 %% Set materials
