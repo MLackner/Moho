@@ -10,7 +10,7 @@ tic
 % Initial index
 fileIndex = 1;
 % Generate folder name
-folderName = datestr( datetime, 'yyyy-MM-dd_HH-mm' );
+folderName = datestr( datetime, 'yyyy-mm-dd_HH-MM' );
 mkdir( ['./data/',folderName] );
 
 %% View
@@ -34,6 +34,8 @@ m.energy = t2e( m );
 %% Predefine some values
 Eind = 0;
 Qrad = 0;
+rTot = 0;
+Qhor = 0;
 
 %% Calculation
 for i=1:sp.numberSteps
@@ -41,7 +43,7 @@ for i=1:sp.numberSteps
     %% Get time
     t = sp.dt*(i-1);
     
-    if rem(t,sp.saveSteps)==0
+    if any(sp.saveSteps==t)
         
         %% Get simulation data
         
@@ -62,7 +64,11 @@ for i=1:sp.numberSteps
         fprintf( '\tMaximum temperature: %g K\n', max( m.temperature(:) ) )
         fprintf( '\tMinimum temperature: %g K\n', min( m.temperature(:) ) )
         fprintf( '\tMean temperature on reaction surface: %g K\n', mean( m.temperature(m.reaction.Elements) ) )
-        fprintf( '\tHeat sink temperature: %g K\n\n', m.sink.temperature )
+        fprintf( '\tHeat sink temperature: %g K\n', m.sink.temperature )
+        fprintf( '\tWater formation rate: %g mol/s\n', sum( rTot(:) )/sp.dt )
+        fprintf( '\tEnergy entry due to reaction: %g J/s\n', sum( Qhor(:) )/sp.dt )
+        fprintf( '\tPartial pressure O2: %g Pa\n', m.reaction.partialPressure_Oxy )
+        fprintf( '\tPartial pressure H2: %g Pa\n\n', m.reaction.partialPressure_Hyd )
         
         %% Gather output information
         m.output.time(fileIndex) = t;
@@ -137,15 +143,41 @@ for i=1:sp.numberSteps
     energyPostHeatSink = sum( m.energy(:) );
     % Energy that went into the heat sinks
     energy2sink = energyPreHeatSink - energyPostHeatSink;
+    % Energy in sink
+    m.sink.energy = m.sink.energy + energy2sink;
+    % Heat flow from sink to the environment
+    m.sink.energy = m.sink.energy - ...
+        m.sink.lossCoefficient*(m.sink.energy/m.sink.heatCapacity - m.ambientTemperature)*sp.dt;
     % Temperature rise in heat sink
-    m.sink.temperature = m.sink.temperature ...
-        + energy2sink/m.sink.heatCapacity;
+    m.sink.temperature = m.sink.energy/m.sink.heatCapacity;
     
     %% Radiation
     Qrad = radiative( m )*sp.dt;
     
     % Apply to energy matrix
     m.energy = m.energy - Qrad;
+    
+    %% Calculate temperature
+    m.temperature = e2t( m );
+    
+    %% Reaction
+    
+    % Water formation rate (in moles per second per each surface element)
+    r = waterFormationRate2( m );
+    % Get total of reacted moles per element
+    rTot = r*m.reaction.surface(m.reaction.Elements)*sp.dt;
+    % Heat of reaction
+    Qhor = rTot*m.reaction.reactionHeat;
+    % Apply heat
+    m.energy(m.reaction.Elements) = m.energy(m.reaction.Elements) - Qhor;
+    
+    % Recalculate partial pressures
+    m.reaction.partialPressure_Oxy = ...
+        m.reaction.partialPressure_Oxy - ...
+        sum( rTot(:) )/2*8.314*m.ambientTemperature/m.chamberVolume;
+    m.reaction.partialPressure_Hyd = ...
+        m.reaction.partialPressure_Hyd - ...
+        sum( rTot(:) )*8.314*m.ambientTemperature/m.chamberVolume;
     
     %% Calculate temperature
     m.temperature = e2t( m );

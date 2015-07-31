@@ -1,70 +1,73 @@
-function r = waterFormationRate2( Area,pressure,temperature,alpha )
-% Calculates the water formation rate on a platinu surface according to the
-% kinetic model of Fassihi et al. (Journal of Catalysis 141, 438-452
-% (1993))
+function [r] = waterFormationRate2( m )
+% Calculates the water formation rate on a platinum surface
 %
-% Output unit is the number of reacting moles per second.
+%   Output:
+%   r       = Output unit is the number of reacting moles per second.
 %
-%   Area       = surface area in m^2
-%   pressure       = pressure in Pa
-%   temperature       = surface temperature in K
-%   alpha   =   ratio of partial pressures of oxygen and hydrogen for the
-%               ureacted gas
+%   Input:
+%   Area        = surface area in m^2
+%   pressure    = pressure in Pa
+%   temperature = surface temperature in K
+%   alpha       = ratio of partial pressures of oxygen and hydrogen for the
+%                   ureacted gas
 
-AVOGADRO = 6.022140857e23;  % Avogadro constant in /mol
-SITEAREA = 4e-20;           % Area a single molecule needs to adsorb on the surface
 GASCONSTANT = 8.3144621;              % Gas constant in J/mol/K
-MOLARMASS = 0.032;                  % Molar mass of oxygen (O2) in kg/mol
-WIRERADIUS = 0.2e-3;
-DIFFUSIONCOEFF_HYD = 0.63e-4;   % Diffusion coefficient for Hydrogen in m^2/s. Taken from Fassihi et al.
-DIFFUSIONCOEFF_OXY = 0.18e-4;   % See above
 
-Zw = surfaceImpingementRate( pressure,temperature );
-s = stickingCoefficient( alpha,temperature );
+% Extract data from structure
+gasTemperature = m.ambientTemperature;
+pressure_Oxy = m.reaction.partialPressure_Oxy;
+pressure_Hyd = m.reaction.partialPressure_Hyd;
+S0_Oxy = m.reaction.stickingCoefficient_Oxy;
+S0_Hyd = m.reaction.stickingCoefficient_Hyd;
+ignTemperature = m.reaction.ignitionTemperature;
+surfTemperature = m.temperature(m.reaction.Elements)'; % Get only the elements where the reaction takes place
 
-r = 2*s.*Zw.*Area./AVOGADRO;
+% Calculate the surface impingement rate in moles per square meter per
+% second.
+Zw_Oxy = surfaceImpingementRate( pressure_Oxy,gasTemperature,0.032 );
+Zw_Hyd = surfaceImpingementRate( pressure_Hyd,gasTemperature,0.002 );
 
+% Calculate the temperature dependece of the sticking coefficient
+s_Oxy = stickingCoefficientTemp( S0_Oxy,300,surfTemperature );
+s_Hyd = stickingCoefficientTemp( S0_Hyd,300,surfTemperature );
 
-    function Zw = surfaceImpingementRate( p,T )
+% Calculate the rate of reaction (go through every single surface element
+%   Check if the temperature of the element is above the ignition
+%   temperature via calculation the difference beteween actual and ignition
+%   temperature.
+%   In a second step ignore negative values of the water formation rate.
+
+isIgn = (surfTemperature - ignTemperature);
+isIgn(isIgn<0) = 0;
+isIgn(isIgn>0) = 1;
+
+if Zw_Oxy*s_Oxy < Zw_Hyd*s_Hyd
+    r = 2*Zw_Oxy.*s_Oxy .* isIgn;
+elseif Zw_Oxy*s_Oxy <= Zw_Hyd*s_Hyd
+    r = Zw_Hyd.*s_Hyd .* isIgn;
+end
+
+% Ignore negative rates
+r(r<0) = 0;
+
+    function Zw = surfaceImpingementRate( p,T,M )
         % Calculates the surface impingement rate according to the Hertz-Knudsen
         % function.
         %
-        % Output is in molecules per second per site area
+        % Output is in molecules per second per square meter
         %
         %   pressure = pressure in Pa
         %   temperature = temperature in K
         
-        Zw = AVOGADRO*p./(sqrt( 2*pi*MOLARMASS*GASCONSTANT*T ));
+        Zw = p./(sqrt( 2*pi*M*GASCONSTANT*T ));
         
     end
 
-    function s = stickingCoefficient( alpha,T )
-        % Calculates the sticking coefficient of oxygen
-        %   alpha = ratio of partial pressures of oxygen and hydrogen in gas phase
+    function s = stickingCoefficientTemp( S0,Tr,T )
+        % Calculates the sticking coefficient of a gas with an initial sticking
+        % coefficient S0 (with initial temperature Tr) at a temperature T
         
-        % Sticking coefficint for oxygen at zero coverage
-        % T. Perger et al. / Combustion and Flame 142 (2005) 107?116
-        S0 = 0.024*300./T;
-        
-        % Alpha values can't be negative
-        alpha(alpha<0) = 0;
-        
-        s = 2*S0.*sqrt( alpha./(1 - alpha) );
-        
-    end
-
-    function alphaSurf = alphaNearSurface( alpha,pressure,temperature )
-        % The reaction changes the relative conentrations of hydrogen and oxygen
-        % near the surface
-        
-        % Partial pressures
-        pressure_Hyd = alpha*pressure;
-        pressure_Oxy = pressure - pressure_Hyd;
-        % Molecule density (number of molecules per cubic metre)
-        molDensity_Oxy = AVOGADRO*pressure_Oxy/GASCONSANT/temperature;
-        molDensity_Hyd = AVOGADRO*pressure_Hyd/GASCONSANT/temperature;
-        
-        molDens
+        s = S0*Tr./T;
         
     end
 

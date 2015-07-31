@@ -8,3 +8,4 @@ addpath( [pwd,'/heatFlowFunctions'] );
 addpath( [pwd,'/userFcns'] );
 addpath( [pwd,'/materials'] );
 addpath( [pwd,'/userScripts'] );
+addpath( [pwd,'/kineticFunctions'] );

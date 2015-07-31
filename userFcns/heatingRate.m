@@ -1,5 +1,5 @@
 function P = heatingRate( time )
 
-P = time*0 - 2;
+P = time*0 + 1.5;
 
 end
