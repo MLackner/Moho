@@ -21,7 +21,7 @@ for i=1:numel(pos)
                 % Surface
                 
                 % Get Area
-                A(i) = m.A(a,b,c,dim);
+                A(i) = A(i) + m.A(a,b,c,dim);
             end
             
         end
