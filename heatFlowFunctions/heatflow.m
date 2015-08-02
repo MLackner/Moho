@@ -175,7 +175,12 @@ for i=1:sp.numberSteps
     m.sink.energy = m.sink.energy + energy2sink;
     % Heat flow from sink to the environment
     m.sink.energy = m.sink.energy - ...
-        m.sink.lossCoefficient*(m.sink.energy/m.sink.heatCapacity - m.ambientTemperature)*sp.dt;
+        m.sink.lossCoefficient* ...
+        (m.sink.energy/m.sink.heatCapacity - m.ambientTemperature)...
+        .*(m.reaction.partialPressure_Oxy +...
+        m.reaction.partialPressure_Hyd +...
+        m.reaction.partialPressure_H2O) .*...
+        sp.dt;
     % Temperature rise in heat sink
     m.sink.temperature = m.sink.energy/m.sink.heatCapacity;    
     
@@ -187,6 +192,12 @@ for i=1:sp.numberSteps
     
     %% Calculate temperature
     m.temperature = e2t( m );
+    
+    %% Convective loss
+    Qconvective = convectiveLoss( m );
+    
+    % Apply to energy matrix
+    m.energy = m.energy + Qconvective;
     
     %% Calculate temperature
     m.temperature = e2t( m );

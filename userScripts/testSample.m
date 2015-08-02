@@ -25,7 +25,7 @@ m = meshGen( base,npd,dims,a,b,c );
 T0 = 300;   % Kelvin
 
 % Set temperature range over which material properties are precalculated
-m.tempRange = 280:6000;    % only integer values allowed
+m.tempRange = 280:2000;    % only integer values allowed
 m.temperature = ones( size( m.Vol ) )*T0;
 
 %% Set materials
@@ -56,16 +56,16 @@ m.sink.HS = areas( HSpos,m );
 
 %% Set heat sink parameters
 
-% Heat capacity of the heat sinks
-m.sink.heatCapacity = 80;
-% Temperature of the sink
+% Heat capacity of the heat sinks in J/K
+m.sink.heatCapacity = 20;
+% Temperature of the sink in K
 m.sink.temperature = 300;
-% Ambient temperature
+% Ambient temperature in K
 m.ambientTemperature = 300;
-% Heat loss coefficient in J/s/K (Total heat loss due to conduction,
+% Heat loss coefficient in J/s/K/Pa (Total heat loss due to conduction,
 % convection and radiation from the sink to the environment, i.e. the
 % sample holder to the chamber and the outside itself.
-m.sink.lossCoefficient = 0.03;
+m.sink.lossCoefficient = 0.3;
 
 % Calculate thermal energy in heat sink
 m.sink.energy = m.sink.heatCapacity*m.sink.temperature;
@@ -99,6 +99,9 @@ m.radiation.emissivity = 1;
 m.radiation.Elements = areas( radi,m );
 m.radiation.surface = searchSurf( m,m.radiation.Elements );
 
+%% Define conductive/convective heat transfer coefficient to gas
+m.conductiveHeatTransfer = 0.00001;
+
 %% Define the area where the reaction takes place
 
 % Set coordinates
@@ -128,6 +131,7 @@ m.reaction.stickingCoefficient_Hyd = 0.30;
 % Make entry for partial pressure at any point in time
 m.reaction.partialPressure_Oxy = m.reaction.initialPressure_Oxy;
 m.reaction.partialPressure_Hyd = m.reaction.initialPressure_Hyd;
+m.reaction.partialPressure_H2O = 0;
 
 %% Other initial properties of this system
 
