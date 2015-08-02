@@ -28,8 +28,8 @@ Zw_Oxy = surfaceImpingementRate( pressure_Oxy,gasTemperature,0.032 );
 Zw_Hyd = surfaceImpingementRate( pressure_Hyd,gasTemperature,0.002 );
 
 % Calculate the temperature dependece of the sticking coefficient
-s_Oxy = stickingCoefficientTemp( S0_Oxy,300,surfTemperature );
-s_Hyd = stickingCoefficientTemp( S0_Hyd,300,surfTemperature );
+s_Oxy = S0_Oxy;%stickingCoefficientTemp( S0_Oxy,m.ambientTemperature,surfTemperature );
+s_Hyd = S0_Hyd;%stickingCoefficientTemp( S0_Hyd,m.ambientTemperature,surfTemperature );
 
 % Calculate the rate of reaction (go through every single surface element
 %   Check if the temperature of the element is above the ignition
@@ -41,20 +41,17 @@ isIgn = (surfTemperature - ignTemperature);
 isIgn(isIgn<0) = 0;
 isIgn(isIgn>0) = 1;
 
-if Zw_Oxy*s_Oxy < Zw_Hyd*s_Hyd
+if Zw_Oxy*s_Oxy <= Zw_Hyd*s_Hyd
     r = 2*Zw_Oxy.*s_Oxy .* isIgn;
-elseif Zw_Oxy*s_Oxy <= Zw_Hyd*s_Hyd
+elseif Zw_Oxy*s_Oxy >= Zw_Hyd*s_Hyd
     r = Zw_Hyd.*s_Hyd .* isIgn;
 end
-
-% Ignore negative rates
-r(r<0) = 0;
 
     function Zw = surfaceImpingementRate( p,T,M )
         % Calculates the surface impingement rate according to the Hertz-Knudsen
         % function.
         %
-        % Output is in molecules per second per square meter
+        % Output is in moles per second per square meter
         %
         %   pressure = pressure in Pa
         %   temperature = temperature in K

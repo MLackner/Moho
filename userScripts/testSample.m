@@ -25,7 +25,7 @@ m = meshGen( base,npd,dims,a,b,c );
 T0 = 300;   % Kelvin
 
 % Set temperature range over which material properties are precalculated
-m.tempRange = 280:3500;    % only integer values allowed
+m.tempRange = 280:6000;    % only integer values allowed
 m.temperature = ones( size( m.Vol ) )*T0;
 
 %% Set materials
@@ -65,10 +65,10 @@ m.ambientTemperature = 300;
 % Heat loss coefficient in J/s/K (Total heat loss due to conduction,
 % convection and radiation from the sink to the environment, i.e. the
 % sample holder to the chamber and the outside itself.
-m.sink.lossCoefficient = 0.01;
+m.sink.lossCoefficient = 0.03;
 
 % Calculate thermal energy in heat sink
-m.sink.energy = m.sink.heatCapacity/m.sink.temperature;
+m.sink.energy = m.sink.heatCapacity*m.sink.temperature;
 
 %% Define position of heat sources
 
@@ -111,9 +111,9 @@ m.reaction.surface = searchSurf( m,m.reaction.Elements );
 % Temperature dependent reaction rate coefficient
 m.reaction.rate = @reactionRate2;
 
-% Partial pressures in Pa
-m.reaction.partialPressure_Oxy = 100;
-m.reaction.partialPressure_Hyd = 200;
+% Initial partial pressures in Pa
+m.reaction.initialPressure_Oxy = 500/7*6;
+m.reaction.initialPressure_Hyd = 500/7;
 
 % Ignition temperature
 m.reaction.ignitionTemperature = 450;
@@ -122,8 +122,12 @@ m.reaction.ignitionTemperature = 450;
 m.reaction.reactionHeat = -242e3;
 
 % Sticking coefficients
-m.reaction.stickingCoefficient_Oxy = 0.02;
-m.reaction.stickingCoefficient_Hyd = 0.05;
+m.reaction.stickingCoefficient_Oxy = 0.11;
+m.reaction.stickingCoefficient_Hyd = 0.30;
+
+% Make entry for partial pressure at any point in time
+m.reaction.partialPressure_Oxy = m.reaction.initialPressure_Oxy;
+m.reaction.partialPressure_Hyd = m.reaction.initialPressure_Hyd;
 
 %% Other initial properties of this system
 
@@ -136,4 +140,7 @@ m.chamberVolume = 0.125;
 
 %% Save this mesh
 
-save( './meshes/testMesh.mat', 'm' )
+save( './meshes/testMesh3.mat', 'm' )
+
+%% Clear
+clear
