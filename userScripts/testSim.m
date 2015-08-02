@@ -2,14 +2,14 @@
 clc,clear,close all
 
 %% Load mesh
-load( './meshes/testMesh3.mat' )
+load( './meshes/PtWire.mat' )
 
 %% Set parameters
-sp.simTime = 400;            % s
-sp.dt = 5e-3;                % s
+sp.simTime = 30.1;            % s
+sp.dt = 10e-3;                % s
 sp.numberSteps = round( sp.simTime/sp.dt );
 sp.visualize = true;
-sp.saveSteps = [0:2:50 60:10:190 200:100:3600];
+sp.saveSteps = [0:0.2:100 102:200 210:10:400];
 sp.saveData = true;
 
 %% Run simulation

@@ -41,9 +41,9 @@ isIgn = (surfTemperature - ignTemperature);
 isIgn(isIgn<0) = 0;
 isIgn(isIgn>0) = 1;
 
-if Zw_Oxy*s_Oxy <= Zw_Hyd*s_Hyd
+if (2*Zw_Oxy*s_Oxy) <= (Zw_Hyd*s_Hyd)
     r = 2*Zw_Oxy.*s_Oxy .* isIgn;
-elseif Zw_Oxy*s_Oxy >= Zw_Hyd*s_Hyd
+elseif 2*Zw_Oxy*s_Oxy >= Zw_Hyd*s_Hyd
     r = Zw_Hyd.*s_Hyd .* isIgn;
 end
 

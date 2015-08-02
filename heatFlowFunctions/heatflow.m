@@ -36,6 +36,8 @@ Eind = 0;
 Qrad = 0;
 m.rTot = 0;
 Qhor = 0;
+m.reactedMoles = 0;
+u = false;
 
 %% Calculation
 for i=1:sp.numberSteps
@@ -68,7 +70,8 @@ for i=1:sp.numberSteps
         fprintf( '\tWater formation rate: %g mol/s\n', sum( m.rTot(:) )/sp.dt )
         fprintf( '\tEnergy entry due to reaction: %g J/s\n', sum( Qhor(:) )/sp.dt )
         fprintf( '\tPartial pressure O2: %g Pa\n', m.reaction.partialPressure_Oxy )
-        fprintf( '\tPartial pressure H2: %g Pa\n\n', m.reaction.partialPressure_Hyd )
+        fprintf( '\tPartial pressure H2: %g Pa\n', m.reaction.partialPressure_Hyd )
+        fprintf( '\tReacted moles: %g mol\n\n', m.reactedMoles )
         
         %% Gather output information
         m.output.time(fileIndex) = t;
@@ -92,6 +95,7 @@ for i=1:sp.numberSteps
                 p(j).LineStyle = '-';
             end
             caxis( [m.tempRange(1) m.tempRange(end)] )
+            axis equal
             colorbar
             pause(1e-15)
         end
@@ -111,22 +115,16 @@ for i=1:sp.numberSteps
     
     %% Heat induction
     % Get heating rate
-    hR = m.source.rate(t);
+    HeatingRate = m.source.rate(t);
     
-    % Get total energy that is induced
-    Eind = hR*sp.dt;
+    % Get total energy that is going to be induced
+    Eind = HeatingRate*sp.dt;
     
-    % Calculate induced fraction for each volume element
-    produkt = hR*m.source.Heat;
-    summe = sum( produkt(:) );
-    if hR == 0
-        m.source.inducedFrac = 0;
-    else
-        m.source.inducedFrac = hR.*m.source.Heat./summe;
-    end
-    
+    % Calculate induced energy for each volume element
+    Qind = Eind*m.source.Heat./sum( m.source.Heat(:) );
+        
     % Induce
-    m.energy = m.energy + m.source.inducedFrac.*Eind;
+    m.energy = m.energy + Qind;
     
     %% Convert to temperature
     m.temperature = e2t( m );
@@ -141,8 +139,13 @@ for i=1:sp.numberSteps
     Qhor = m.rTot*m.reaction.reactionHeat;
     % Apply heat
     m.energy(m.reaction.Elements) = m.energy(m.reaction.Elements) - Qhor;
+    % Count reacted moles
+    m.reactedMoles = m.reactedMoles + m.rTot;
     
-    % Recalculate partial pressures
+    %% Calculate temperature
+    m.temperature = e2t( m );    
+    
+    %% Recalculate partial pressures
     %
     %   For the partial pressure of H2O apply a certain factor that
     %   accounts for adsorption
@@ -157,14 +160,34 @@ for i=1:sp.numberSteps
         (m.reaction.initialPressure_Hyd - m.reaction.partialPressure_Hyd) ...
         .*(1 - 0.14);
     
-    %% Heat sinks (Before or after flow ????)
+    %% Radiation
+    Qrad = radiative( m )*sp.dt;
     
+    % Apply to energy matrix
+    m.energy = m.energy - Qrad;   
+    
+    %% Calculate temperature
+    m.temperature = e2t( m );
+    
+    %% Convective loss
+    Qconvective = convectiveLoss( m );
+    
+    % Apply to energy matrix
+    m.energy = m.energy + Qconvective;
+    
+    %% Calculate temperature
+    m.temperature = e2t( m );
+    
+    %% Heat sinks (Before or after flow ????)
+        
+    % Calculate a thermal energy matrix
+    m.energy = t2e( m );
+    % Energy in the system before the heat sinks were applied
+    energyPreHeatSink = sum( m.energy(:) );
     % Set temperature where the heat sinks are located to 0
     m.temperature = (1 - m.sink.HS).*m.temperature;
     % Set temperature where the heat sinks are located to sink temperature
     m.temperature(m.temperature==0) = m.sink.temperature;
-    % Energy in the system before the heat sinks were applied
-    energyPreHeatSink = sum( m.energy(:) );
     % Calculate a thermal energy matrix
     m.energy = t2e( m );
     % Energy in the system after the heat sinks were applied
@@ -184,21 +207,6 @@ for i=1:sp.numberSteps
     % Temperature rise in heat sink
     m.sink.temperature = m.sink.energy/m.sink.heatCapacity;    
     
-    %% Radiation
-    Qrad = radiative( m )*sp.dt;
-    
-    % Apply to energy matrix
-    m.energy = m.energy - Qrad;
-    
-    %% Calculate temperature
-    m.temperature = e2t( m );
-    
-    %% Convective loss
-    Qconvective = convectiveLoss( m );
-    
-    % Apply to energy matrix
-    m.energy = m.energy + Qconvective;
-    
     %% Calculate temperature
     m.temperature = e2t( m );
     
@@ -212,15 +220,6 @@ for i=1:sp.numberSteps
     
     % Add heatflux to current matrix to gain new state
     m.energy = m.energy + HF;
-    
-    %     % Save data
-    %     if rem(i,saveSteps)==0 || i == 1
-    %         % Set filename
-    %         fileName = [savePath,int2str(j)];
-    %         save(fileName,'M','-v6')
-    %         % Increase index
-    %         j = j+1;
-    %     end
     
 end
 

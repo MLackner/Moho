@@ -5,7 +5,7 @@ clc,clear,close all
 % Set the base coordinates of the volume ( x y z );
 base = [0 0 0];
 % Number of nodes in each dimension
-npd = [30 4 4];       % Nodes per dimension (x y z)
+npd = [15 3 3];       % Nodes per dimension (x y z)
 % Dimensions (x y z) in meters
 dims = [20e-3 0.1e-3 0.1e-3];
 % Node density calculation parameters y = a*(x - b)^2 + c
@@ -25,7 +25,7 @@ m = meshGen( base,npd,dims,a,b,c );
 T0 = 300;   % Kelvin
 
 % Set temperature range over which material properties are precalculated
-m.tempRange = 280:2200;    % only integer values allowed
+m.tempRange = 280:8000;    % only integer values allowed
 m.temperature = ones( size( m.Vol ) )*T0;
 
 %% Set materials
@@ -64,7 +64,7 @@ m.ambientTemperature = 300;
 % Heat loss coefficient in J/s/K/Pa (Total heat loss due to conduction,
 % convection and radiation from the sink to the environment, i.e. the
 % sample holder to the chamber and the outside itself.
-m.sink.lossCoefficient = 0.1;
+m.sink.lossCoefficient = 0;
 
 % Calculate thermal energy in heat sink
 m.sink.energy = m.sink.heatCapacity*m.sink.temperature;
@@ -92,14 +92,14 @@ radi = [...
     ];
 
 % Set emissivity
-m.radiation.emissivity = 1;
+m.radiation.emissivity = 0.8;
 
 % Calculate surface areas
 m.radiation.Elements = areas( radi,m );
 m.radiation.surface = searchSurf( m,m.radiation.Elements );
 
 %% Define conductive/convective heat transfer coefficient to gas
-m.conductiveHeatTransfer = 0.00001;
+m.conductiveHeatTransfer = 0;
 
 %% Define the area where the reaction takes place
 
@@ -114,8 +114,8 @@ m.reaction.surface = searchSurf( m,m.reaction.Elements );
 m.reaction.rate = @reactionRate2;
 
 % Initial partial pressures in Pa
-m.reaction.initialPressure_Oxy = 500/7*6;
-m.reaction.initialPressure_Hyd = 500/7;
+m.reaction.initialPressure_Oxy = 500;
+m.reaction.initialPressure_Hyd = 0;
 
 % Ignition temperature
 m.reaction.ignitionTemperature = 450;
