@@ -12,3 +12,17 @@ Pt.heatCapacityFcn = @heatCapacityPt;              % J/kg/K
 Pt.thermalConductivity = 71.6;      % W/m/K
 
 save('./materials/Pt','Pt')
+
+%% Properties of Tantalum
+Ta.density = 16690;                 % Taken from Wikipedia
+Ta.heatCapacityFcn = @heatCapacityTa;
+Ta.thermalConductivity = 57.5;      % Taken from Wikipedia
+
+save('./materials/Ta','Ta')
+
+%% Properties of Ta(V)-oxide
+TaOx.density = 8200;
+TaOx.heatCapacityFcn = @heatCapacityTaOx; %DOI: 10.1021/ja01108a005
+TaOx.thermalConductivity = 30;      %Guess
+
+save('./materials/TaOx','TaOx')

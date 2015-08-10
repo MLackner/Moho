@@ -17,7 +17,11 @@ m.material.names{ matIdx } = material;
 locs = m.material.(material).area;  % Get location matrix of material
 
 % Material index
-m.material.index = matIdx*locs;
+for i=1:numel( m.Vol )
+    if m.material.index(i) == 0
+        m.material.index(i) = m.material.index(i) + matIdx*locs(i);
+    end
+end
 % Density
 m.material.density = ...
     mat.(material).density*locs + m.material.density;

@@ -15,17 +15,30 @@ mkdir( ['./data/',folderName] );
 
 %% View
 if sp.visualize
-    m.temperature(1,1,1) = 400;
-    fh = figure('WindowStyle','docked');
-    xslice = [1, size( m.Vol,2 )];
-    yslice = [1, size( m.Vol,1 )];
-    zslice = [1, size( m.Vol,3 )];
-    p = slice( m.temperature,xslice,yslice,zslice );
-    xlabel('X')
-    ylabel('Y')
-    zlabel('Z')
-    caxis( [m.tempRange(1) m.tempRange(end)] )
-    m.temperature(1,1,1) = 300;
+    
+    % In case of a 3D mesh
+    if min( size( m.Vol ) ) > 1
+        m.temperature(1,1,1) = 400;
+        fh = figure('WindowStyle','docked');
+        xslice = [1, size( m.Vol,2 )];
+        yslice = [1, size( m.Vol,1 )];
+        zslice = [1, size( m.Vol,3 )];
+        p = slice( m.temperature,xslice,yslice,zslice );
+        xlabel('X')
+        ylabel('Y')
+        zlabel('Z')
+        caxis( [m.tempRange(1) m.tempRange(end)] )
+        m.temperature(1,1,1) = 300;
+    end
+    
+    % 1D
+    if min( size( m.Vol ) ) == 1
+        fh = figure('WindowStyle','docked');
+        p = plot( m.temperature );
+        xlabel( 'X' )
+        ylabel( 'Temperature' )
+    end
+    
 end
 
 %% Calculate a thermal energy matrix
@@ -56,7 +69,7 @@ for i=1:sp.numberSteps
         
         %% Print output information
         fprintf( 'Step #%g\n',i )
-        fprintf( '\tSimulation time: %g s\n',t )
+        fprintf( '\tSimulation time: %g s (%g %%)\n',t,t/sp.simTime*100 )
         fprintf( '\tRun time: %g s\n',runTime )
         fprintf( '\tEnergy in system: %g J\n',sumEnergy )
         fprintf( '\tChange in energy: %g J\n', sumEnergy - sum( m.initEnergy(:) ) )
@@ -87,17 +100,27 @@ for i=1:sp.numberSteps
         
         %% View Data
         if sp.visualize
-            m.temperature(1,1,1) = m.temperature(1,1,1) + 1e-10;
-            p = slice( m.temperature,xslice,yslice,zslice );
-            m.temperature(1,1,1) = m.temperature(1,1,1) - 1e-10;
-            for j=1:numel(p)
-                p(j).FaceColor = 'interp';
-                p(j).LineStyle = '-';
+            
+            if min( size( m.Vol ) ) > 1
+                m.temperature(1,1,1) = m.temperature(1,1,1) + 1e-10;
+                p = slice( m.temperature,xslice,yslice,zslice );
+                m.temperature(1,1,1) = m.temperature(1,1,1) - 1e-10;
+                for j=1:numel(p)
+                    p(j).FaceColor = 'interp';
+                    p(j).LineStyle = '-';
+                end
+                caxis( [m.tempRange(1) m.tempRange(end)] )
+                axis equal
+                colorbar
+                pause(1e-15)
             end
-            caxis( [m.tempRange(1) m.tempRange(end)] )
-            axis equal
-            colorbar
-            pause(1e-15)
+            
+            % 1D
+            if min( size( m.Vol ) ) == 1
+                p = plot( m.temperature );
+                pause(1e-15)
+            end
+            
         end
         
         %% Save data
