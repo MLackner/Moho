@@ -7,7 +7,7 @@ SiO2.thermalConductivity = 1.114;   % W/m/K
 save('./materials/SiO2','SiO2')
 
 %% Properties of Platinum
-Pt.density = 214500;                % kg/m^3
+Pt.density = 21450;                % kg/m^3
 Pt.heatCapacityFcn = @heatCapacityPt;              % J/kg/K
 Pt.thermalConductivity = 71.6;      % W/m/K
 

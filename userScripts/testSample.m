@@ -140,7 +140,7 @@ m.energy = t2e( m );
 m.initEnergy = sum( m.energy(:) );
 
 % Set the Volume of the chamber in m^3
-m.chamberVolume = 0.125;
+m.chamberVolume = 0.12;
 
 %% Save this mesh
 
