@@ -34,6 +34,7 @@ m.material.density = zeros( size( m.Vol ) );
 m.material.thermalConductivity = zeros( size( m.Vol ) );
 m.material.heatCapacityFcn = cell( size( m.Vol ) );
 m.material.heatCapacity = zeros( [size( m.Vol ), numel( m.tempRange )] );
+m.material.index = zeros( size( m.Vol ) );
 
 % Pt
 Ptpos = [ 0, dims(1), 0, dims(2), 0, dims(3) ];
@@ -42,6 +43,23 @@ m.material.Pt.area = areas( Ptpos,m );
 
 m.material.names = {};
 m = setMaterial( m, 'Pt' );
+
+%% Resistance measurement
+%
+%   Measure the resistance over the specified elements
+%
+
+% Define a temperature-resistance function
+m.measurement.resistanceFcn = @PtTemperatureResistance;
+
+% Define elements
+MSpos = [ 0, dims(1), 0, dims(2), 0, dims(3) ];
+
+% Define direction of measurement (1 = x, 2 = y, 3 = z)
+m.measurement.MSdir = 3;
+
+
+m.measurement.MSpos = areas( MSpos,m );
 
 %% Define position of heat sinks
 
@@ -114,14 +132,14 @@ m.reaction.surface = searchSurf( m,m.reaction.Elements );
 m.reaction.rate = @reactionRate2;
 
 % Initial partial pressures in Pa
-m.reaction.initialPressure_Oxy = 500;
-m.reaction.initialPressure_Hyd = 0;
+m.reaction.initialPressure_Oxy = 400;
+m.reaction.initialPressure_Hyd = 100;
 
 % Ignition temperature
 m.reaction.ignitionTemperature = 450;
 
 % Heat of reaction in J/mol
-m.reaction.reactionHeat = -242e3;
+m.reaction.reactionHeat = -242; %-242e3;
 
 % Sticking coefficients
 m.reaction.stickingCoefficient_Oxy = 0.11;

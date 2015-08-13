@@ -28,7 +28,7 @@ pos = nodeDensity( npd,a,b,c );
 nodes = ([X',Y',Z'] - 1);
 % Adjust spacing in x y and z direction
 for i=1:3
-    % Find specifig indices starting with 0
+    % Find specific indices starting with 0
     for j=0:npd(i)-1
         idx = find( nodes(:,i) == j );
         nodes(idx,i) = pos{i}(j+1);
@@ -255,6 +255,16 @@ m.dist(:,:,1:end-1,6) = abs( m.centerPoints(:,:,1:end-1,3) - m.centerPoints(:,:,
 
 m.nodes = nodes;
 m.elements = elements;
+
+%% Calculate width of each element
+
+for i=1:3
+    
+    position = pos{i} * dims(i);
+    m.ElementWidth{i} = position(2:end) - position(1:end-1);
+    
+end
+
 
 fprintf( '\tDone. (%g s)\n', toc )
 
