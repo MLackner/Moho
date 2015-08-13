@@ -34,6 +34,7 @@ m.material.density = zeros( size( m.Vol ) );
 m.material.thermalConductivity = zeros( size( m.Vol ) );
 m.material.heatCapacityFcn = cell( size( m.Vol ) );
 m.material.heatCapacity = zeros( [size( m.Vol ), numel( m.tempRange )] );
+m.material.index = zeros( size( m.Vol ) );
 
 % SiO2
 SiO2pos = [ 0, dims(1), 0, dims(2), 0, dims(3) ];
@@ -79,7 +80,7 @@ m.source.Heat = areas( HeatPos1,m );
 %% Set heat source parameters
 
 % Set a heating rate (can be a constant or a function handle)
-m.source.rate = @heatingRate;
+m.source.rate = @heatingRateFS_30;
 
 %% Define radiative areas
 
@@ -115,8 +116,8 @@ m.reaction.surface = searchSurf( m,m.reaction.Elements );
 m.reaction.rate = @reactionRate2;
 
 % Initial partial pressures in Pa
-m.reaction.initialPressure_Oxy = 500/7*6;
-m.reaction.initialPressure_Hyd = 500/7;
+m.reaction.initialPressure_Oxy = 0;
+m.reaction.initialPressure_Hyd = 0;
 
 % Ignition temperature
 m.reaction.ignitionTemperature = 450;
@@ -144,7 +145,7 @@ m.chamberVolume = 0.12;
 
 %% Save this mesh
 
-save( './meshes/testMesh3.mat', 'm' )
+save( './meshes/PtFilmSample.mat', 'm' )
 
 %% Clear
 clear

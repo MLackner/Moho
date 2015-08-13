@@ -10,7 +10,7 @@ tic
 % Initial index
 fileIndex = 1;
 % Generate folder name
-folderName = datestr( datetime, 'yyyy-mm-dd_HH-MM' );
+folderName = sp.folderName;
 mkdir( ['./data/',folderName] );
 
 %% View
@@ -50,7 +50,8 @@ Qrad = 0;
 m.rTot = 0;
 Qhor = 0;
 m.reactedMoles = 0;
-u = false;
+m.Qconvective = 0;
+Qind = 0;
 
 %% Calculation
 for i=1:sp.numberSteps
@@ -69,12 +70,14 @@ for i=1:sp.numberSteps
         
         %% Print output information
         fprintf( 'Step #%g\n',i )
-        fprintf( '\tSimulation time: %g s (%g %%)\n',t,t/sp.simTime*100 )
-        fprintf( '\tRun time: %g s\n',runTime )
+        fprintf( '\tSimulation time: %g s (%g %%)\n',t,round(t/sp.simTime*100,1) )
+        fprintf( '\tRun time: %g s\n',round(runTime,1) )
         fprintf( '\tEnergy in system: %g J\n',sumEnergy )
         fprintf( '\tChange in energy: %g J\n', sumEnergy - sum( m.initEnergy(:) ) )
-        fprintf( '\tInduced energy: %g J/s\n', Eind/sp.dt )
+        fprintf( '\tInduced energy: %g J/s\n', sum(Qind(:))/sp.dt )
+        fprintf( '\tHeating Rate: %g J/s\n', m.source.rate(t) )
         fprintf( '\tRadiated heat: %g J/s\n', sum(Qrad(:))/sp.dt )
+        fprintf( '\tConvective loss: %g J/s\n', sum(m.Qconvective(:))/sp.dt )
         fprintf( '\tMean tempearature: %g K\n', mean( m.temperature(:) ) )
         fprintf( '\tMaximum temperature: %g K\n', max( m.temperature(:) ) )
         fprintf( '\tMinimum temperature: %g K\n', min( m.temperature(:) ) )
@@ -88,6 +91,8 @@ for i=1:sp.numberSteps
         
         %% Gather output information
         m.output.time(fileIndex) = t;
+        m.output.heatingRate(fileIndex) = m.source.rate(t);
+        m.output.sumEnergy(fileIndex) = sum( m.energy(:) );
         m.output.runTime(fileIndex) = runTime;
         m.output.meanTempAtRSurf(fileIndex) = ...
             mean( m.temperature(m.reaction.Elements) );
@@ -109,8 +114,12 @@ for i=1:sp.numberSteps
                     p(j).FaceColor = 'interp';
                     p(j).LineStyle = '-';
                 end
-                caxis( [m.tempRange(1) m.tempRange(end)] )
+                caxis( [300 600] )
                 axis equal
+                view( [t*6,30] )
+                xlabel('X')
+                ylabel('Y')
+                zlabel('Z')
                 colorbar
                 pause(1e-15)
             end
@@ -193,10 +202,10 @@ for i=1:sp.numberSteps
     m.temperature = e2t( m );
     
     %% Convective loss
-    Qconvective = convectiveLoss( m );
+    m.Qconvective = convectiveLoss( m )*sp.dt;
     
     % Apply to energy matrix
-    m.energy = m.energy + Qconvective;
+    m.energy = m.energy + m.Qconvective;
     
     %% Calculate temperature
     m.temperature = e2t( m );
@@ -215,18 +224,19 @@ for i=1:sp.numberSteps
     m.energy = t2e( m );
     % Energy in the system after the heat sinks were applied
     energyPostHeatSink = sum( m.energy(:) );
-    % Energy that went into the heat sinks
-    energy2sink = energyPreHeatSink - energyPostHeatSink;
+    % Energy that went into the heat sinks ( Mulitplicator 4 is because
+    % the mesh is only 1/4 of the full one )
+    energy2sink = (energyPreHeatSink - energyPostHeatSink)*4;
     % Energy in sink
     m.sink.energy = m.sink.energy + energy2sink;
     % Heat flow from sink to the environment
     m.sink.energy = m.sink.energy - ...
         m.sink.lossCoefficient* ...
         (m.sink.energy/m.sink.heatCapacity - m.ambientTemperature)...
-        .*(m.reaction.partialPressure_Oxy +...
-        m.reaction.partialPressure_Hyd +...
-        m.reaction.partialPressure_H2O) .*...
-        sp.dt;
+        *sp.dt;     %...
+%         .*(m.reaction.partialPressure_Oxy +...
+%         m.reaction.partialPressure_Hyd +...
+%         m.reaction.partialPressure_H2O);
     % Temperature rise in heat sink
     m.sink.temperature = m.sink.energy/m.sink.heatCapacity;    
     
@@ -250,6 +260,11 @@ end
 m.temperature = e2t( m );
 
 M = m;
+plotyy(M.output.time,M.output.meanTempAtRSurf, M.output.time,M.output.heatSinkTemp)
+
+load handel;
+player = audioplayer(y, Fs);
+play(player);
 
 toc
 end

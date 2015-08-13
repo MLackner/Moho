@@ -2,7 +2,7 @@
 clc,clear,close all
 
 %% Load mesh
-load( './meshes/Films.mat' )
+load( './meshes/PtFilmSample_Vac_30V.mat' )
 
 %% Set parameters
 sp.simTime = 5e-8;            % s
