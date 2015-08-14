@@ -1,4 +1,4 @@
-function P = heatingRateFS_Vac( t )
+function P = heatingRateFS_Vac( m,t )
 
 Umax1 = 3.0;
 Umax2 = 4.5;
@@ -7,7 +7,12 @@ Umax4 = 9.0;
 
 U0 = 0.1;
 
-R_ITO = 19;
+% Get mean temperature of ITO
+idx = m.source.Heat;
+Temperatures = m.temperature(idx);
+T = mean( Temperatures(:) );
+
+R_ITO = 2/280*T + 17;
 
 
 if t >= 44 && t <= 190

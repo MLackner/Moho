@@ -5,7 +5,7 @@ clc,clear,close all
 % Set the base coordinates of the volume ( x y z );
 base = [0 0 0];
 % Number of nodes in each dimension
-npd = [20 20 8];       % Nodes per dimension (x y z)
+npd = [15 15 8];       % Nodes per dimension (x y z)
 % Dimensions (x y z) in meters
 dims = [5e-3 5e-3 1.1e-3];
 % Node density calculation parameters y = a*(x - b)^2 + c
@@ -57,7 +57,7 @@ m.sink.HS = areas( HSpos,m );
 %% Set heat sink parameters
 
 % Heat capacity of the heat sinks in J/K
-m.sink.heatCapacity = 100;
+m.sink.heatCapacity = 80;
 % Temperature of the sink in K
 m.sink.temperature = 300;
 % Ambient temperature in K

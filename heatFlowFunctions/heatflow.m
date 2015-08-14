@@ -75,7 +75,7 @@ for i=1:sp.numberSteps
         fprintf( '\tEnergy in system: %g J\n',sumEnergy )
         fprintf( '\tChange in energy: %g J\n', sumEnergy - sum( m.initEnergy(:) ) )
         fprintf( '\tInduced energy: %g J/s\n', sum(Qind(:))/sp.dt )
-        fprintf( '\tHeating Rate: %g J/s\n', m.source.rate(t) )
+        fprintf( '\tHeating Rate: %g J/s\n', m.source.rate(m,t) )
         fprintf( '\tRadiated heat: %g J/s\n', sum(Qrad(:))/sp.dt )
         fprintf( '\tConvective loss: %g J/s\n', sum(m.Qconvective(:))/sp.dt )
         fprintf( '\tMean tempearature: %g K\n', mean( m.temperature(:) ) )
@@ -91,7 +91,7 @@ for i=1:sp.numberSteps
         
         %% Gather output information
         m.output.time(fileIndex) = t;
-        m.output.heatingRate(fileIndex) = m.source.rate(t);
+        m.output.heatingRate(fileIndex) = m.source.rate(m,t);
         m.output.sumEnergy(fileIndex) = sum( m.energy(:) );
         m.output.runTime(fileIndex) = runTime;
         m.output.meanTempAtRSurf(fileIndex) = ...
@@ -147,7 +147,7 @@ for i=1:sp.numberSteps
     
     %% Heat induction
     % Get heating rate
-    HeatingRate = m.source.rate(t);
+    HeatingRate = m.source.rate( m,t );
     
     % Get total energy that is going to be induced
     Eind = HeatingRate*sp.dt;
