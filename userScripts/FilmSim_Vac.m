@@ -22,6 +22,7 @@ if exist( ['./data/', sp.folderName], 'dir' )
         runSim = true;
     else
         runSim = false;
+        return
     end
     
 else
@@ -35,3 +36,20 @@ end
 if runSim
     M = heatflow( m,sp );
 end
+
+
+%% Output
+figure
+subplot(3,1,1)
+plot(M.output.time,M.output.heatingRate)
+ylabel( 'Heating Rate [W]' )
+
+subplot(3,1,2)
+plot(M.output.time,M.output.meanTempAtRSurf)
+
+subplot(3,1,3)
+plot(M.output.time,M.output.heatSinkTemp)
+
+load handel;
+player = audioplayer(y, Fs);
+play(player);

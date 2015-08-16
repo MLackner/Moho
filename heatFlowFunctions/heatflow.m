@@ -50,7 +50,8 @@ Qrad = 0;
 m.rTot = 0;
 Qhor = 0;
 m.reactedMoles = 0;
-m.Qconvective = 0;
+Qgas = 0;
+Qgas_HS = 0;
 Qind = 0;
 
 %% Calculation
@@ -77,7 +78,8 @@ for i=1:sp.numberSteps
         fprintf( '\tInduced energy: %g J/s\n', sum(Qind(:))/sp.dt )
         fprintf( '\tHeating Rate: %g J/s\n', m.source.rate(m,t) )
         fprintf( '\tRadiated heat: %g J/s\n', sum(Qrad(:))/sp.dt )
-        fprintf( '\tConvective loss: %g J/s\n', sum(m.Qconvective(:))/sp.dt )
+        fprintf( '\tLoss to gas (sample): %g J/s\n', sum(Qgas(:))/sp.dt )
+        fprintf( '\tLoss to gas (heat sink): %g J/s\n', Qgas_HS/sp.dt )
         fprintf( '\tMean tempearature: %g K\n', mean( m.temperature(:) ) )
         fprintf( '\tMaximum temperature: %g K\n', max( m.temperature(:) ) )
         fprintf( '\tMinimum temperature: %g K\n', min( m.temperature(:) ) )
@@ -97,6 +99,7 @@ for i=1:sp.numberSteps
         m.output.meanTempAtRSurf(fileIndex) = ...
             mean( m.temperature(m.reaction.Elements) );
         m.output.heatSinkTemp(fileIndex) = m.sink.temperature;
+        m.output.sourceTemp(fileIndex) = mean( m.temperature(m.source.Heat) );
         m.output.meanTemp(fileIndex) = mean( m.temperature(:) );
         m.output.heatRadiated(fileIndex) = sum(Qrad(:))/sp.dt;
         m.output.rate(fileIndex) = sum( m.rTot(:) )/sp.dt;
@@ -201,14 +204,37 @@ for i=1:sp.numberSteps
     %% Calculate temperature
     m.temperature = e2t( m );
     
-    %% Convective loss
-    m.Qconvective = convectiveLoss( m )*sp.dt;
+    %% Heat loss to the gas
     
-    % Apply to energy matrix
-    m.energy = m.energy + m.Qconvective;
+    % Calculate total pressure
+    totalPressure = m.reaction.partialPressure_Oxy...
+        + m.reaction.partialPressure_Hyd ...
+        + m.reaction.partialPressure_H2O;
+    
+    % Determine regime
+    if totalPressure > 0.1
+        % Viscous flow
+        % Sample
+        Qgas = viscousLoss( m,m.sample.ViscousLossCoefficient,m.temperature );
+        % Heat Sink
+        Qgas_HS = viscousLoss( m,m.sink.ViscousLossCoefficient,m.sink.temperature );
+    else
+        % Molecular flow
+        % Sample
+        Qgas = molecularLoss( m,m.sample.MolecularLossCoefficient,m.temperature );
+        % Heat Sink
+        Qgas_HS = molecularLoss( m,m.sink.MolecularLossCoefficient,m.sink.temperature );
+    end
+    
+    % Apply
+    % Sample
+    m.energy = m.energy - Qgas.*m.radiation.Elements;
+    % Heat Sink
+    m.sink.energy = m.sink.energy - Qgas_HS;
     
     %% Calculate temperature
     m.temperature = e2t( m );
+    m.sink.temperature = m.sink.energy/m.sink.heatCapacity;
     
     %% Heat sinks (Before or after flow ????)
         
@@ -260,11 +286,6 @@ end
 m.temperature = e2t( m );
 
 M = m;
-plotyy(M.output.time,M.output.meanTempAtRSurf, M.output.time,M.output.heatSinkTemp)
-
-load handel;
-player = audioplayer(y, Fs);
-play(player);
 
 toc
 end

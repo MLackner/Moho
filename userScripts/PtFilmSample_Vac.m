@@ -5,7 +5,7 @@ clc,clear,close all
 % Set the base coordinates of the volume ( x y z );
 base = [0 0 0];
 % Number of nodes in each dimension
-npd = [15 15 8];       % Nodes per dimension (x y z)
+npd = [20 20 10];       % Nodes per dimension (x y z)
 % Dimensions (x y z) in meters
 dims = [5e-3 5e-3 1.1e-3];
 % Node density calculation parameters y = a*(x - b)^2 + c
@@ -57,9 +57,9 @@ m.sink.HS = areas( HSpos,m );
 %% Set heat sink parameters
 
 % Heat capacity of the heat sinks in J/K
-m.sink.heatCapacity = 80;
+m.sink.heatCapacity = 65; % 80 was almost good 60 better
 % Temperature of the sink in K
-m.sink.temperature = 300;
+m.sink.temperature = 302.5;
 % Ambient temperature in K
 m.ambientTemperature = 300;
 % Heat loss coefficient in J/s/K/Pa (Total heat loss due to conduction,
@@ -114,7 +114,7 @@ m.reaction.surface = searchSurf( m,m.reaction.Elements );
 m.reaction.rate = @reactionRate2;
 
 % Initial partial pressures in Pa
-m.reaction.initialPressure_Oxy = 0;
+m.reaction.initialPressure_Oxy = 2e-5;
 m.reaction.initialPressure_Hyd = 0;
 
 % Ignition temperature

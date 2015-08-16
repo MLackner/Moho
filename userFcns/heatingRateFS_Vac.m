@@ -1,44 +1,68 @@
 function P = heatingRateFS_Vac( m,t )
+% Calculates the dissipated power in the sample at a given time.
+%
+%   Input:
+%   m   =   Mesh
+%   t   =   Current simulation time in s
+%
+%   Output:
+%   P   =   Total dissipated power in the sample in W
+%
 
-Umax1 = 3.0;
-Umax2 = 4.5;
-Umax3 = 6.0;
-Umax4 = 9.0;
+% Set maximum voltages for each heating cycle in volt
+Umax = [3.0 4.5 6.0 7.5];
 
+% Set start and end times for the heating cycles in seconds
+ton = [44 234 498 870];
+toff = [190 398 707 1231];
+
+% Set the applied base voltage in volt
 U0 = 0.1;
 
-% Get mean temperature of ITO
+% Set voltage ramp in V/s
+ramp = 0.1;
+
+
+% Get the mean temperature of ITO film (Supposed to be the temperature of the
+% layer in which the energy is induced) and calculate its resistance
+
+% Get matrix indices of the heat source elements
 idx = m.source.Heat;
+% Get temperatures of the heat source elements
 Temperatures = m.temperature(idx);
+% Calculate the mean temperature of all these elements
 T = mean( Temperatures(:) );
 
-R_ITO = 2/280*T + 17;
+% Approximate temperature dependece of the ITO film resistance
+R_ITO = 1/100*T + 14;
 
 
-if t >= 44 && t <= 190
-    U = (t - 44)*0.1 + U0;
-    if U > Umax1
-        U = Umax1;
+% Calculate applied voltage
+for i=1:numel( Umax )
+    
+    if t >= ton(i) && t <= toff(i)
+        % Sample is heated
+        % Calculated applied voltage drop based on the used ramp
+        U = (t - ton(i))*ramp + U0;
+        
+        if U > Umax(i)
+            % Voltage based on ramp is higher than maximum voltage.
+            % Set voltage to maximum voltage
+            U = Umax(i);
+        end
+        
+        % Applied voltage found. Leave the for loop.
+        break
+        
+    else
+        % Sample is not heated.
+        % Use base voltage
+        U = U0;
     end
-elseif t >= 234 && t <= 398
-    U = (t - 234)*0.1 + U0;
-    if U > Umax2
-        U = Umax2;
-    end
-elseif t >= 498 && t <= 707
-    U = (t - 498)*0.1 + U0;
-    if U > Umax3
-        U = Umax3;
-    end
-elseif t >= 870 && t <= 1231
-    U = (t - 870)*0.1 + U0;
-    if U > Umax4
-        U = Umax4;
-    end
-else
-    U = U0;
+    
 end
 
+% Calculate dissipated power in W
 P = U^2/R_ITO;
 
 end
