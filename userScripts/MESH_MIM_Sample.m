@@ -5,9 +5,9 @@ clc,clear,close all
 % Set the base coordinates of the volume ( x y z );
 base = [0 0 0];
 % Number of nodes in each dimension
-npd = [10 10 6];       % Nodes per dimension (x y z)
+npd = [81 37 11];       % Nodes per dimension (x y z)
 % Dimensions (x y z) in meters
-dims = [5e-3 5e-3 1.1e-3];
+dims = [20e-3 9e-3 0.6e-3];
 % Node density calculation parameters y = a*(x - b)^2 + c
 a = [0 0 0];
 b = [0.5 0.5 0.5];
@@ -22,10 +22,10 @@ m = meshGen( base,npd,dims,a,b,c );
 
 %% Set start temperature
 
-T0 = 315;   % Kelvin
+T0 = 300;   % Kelvin
 
 % Set temperature range over which material properties are precalculated
-m.tempRange = 280:1300;    % only integer values allowed
+m.tempRange = 30:1000;    % only integer values allowed
 m.temperature = ones( size( m.Vol ) )*T0;
 
 %% Set materials
@@ -48,8 +48,10 @@ m = setMaterial( m, 'SiO2' );
 
 % Cartesian coordinates [x1,1 x1,2 y1,1 y1,2, z1,1 z1,2; x2,1 x2,2, ... ]
 HSpos = [...
-    0, 1.5e-3, 0, dims(2), 0, 0;
-   4e-3, dims(2),  0.5e-3, 1e-3, dims(3), dims(3);
+    4.5e-3, 6e-3, 0, dims(2), 0, 0;
+    14e-3, 15.5e-3, 0, dims(2), 0, 0;
+    9.6e-3, 10.4e-3,  0.9e-3, 2e-3, dims(3), dims(3);
+    1e-3, 2e-3,  3.75e-3, 5e-3, dims(3), dims(3);
     ];
 
 m.sink.HS = areas( HSpos,m );
@@ -57,35 +59,40 @@ m.sink.HS = areas( HSpos,m );
 %% Set heat sink parameters
 
 % Heat capacity of the heat sinks in J/K
-m.sink.heatCapacity = 55; % 65
+m.sink.heatCapacity = 30; % 80 was almost good 60 better
 % Temperature of the sink in K
-m.sink.temperature = 311;
+m.sink.temperature = 300;
 % Ambient temperature in K
 m.ambientTemperature = 300;
-% Heat loss coefficient in J/s due to conduction from the sink to the environment, i.e. the
+% Cooling unit temperature
+m.coolingTemperature = 300;
+% Heat loss coefficient in J/s/K/Pa (Total heat loss due to conduction,
+% convection and radiation from the sink to the environment, i.e. the
 % sample holder to the chamber and the outside itself.
-m.sink.lossCoefficient = 0.0018706*m.sink.heatCapacity; %0.0018706
+m.sink.lossCoefficient = 0.005*m.sink.heatCapacity; %0.0018706
 
 % Calculate thermal energy in heat sink
 m.sink.energy = m.sink.heatCapacity*m.sink.temperature;
 
 %% Define position of heat sources
 
-HeatPos1 = [0, dims(1), 0, dims(2), 0, 0];
+HeatPos1 = [4.5e-3, 15.5e-3, 0, dims(2), 0, 0];
 
 m.source.Heat = areas( HeatPos1,m );
 
 %% Set heat source parameters
 
 % Set a heating rate (can be a constant or a function handle)
-m.source.rate = @heatingRateFS_H2_500;
+m.source.rate = @heatingRate_MIM;
 
 %% Define radiative areas
 
 % Set Coordinates
 radi = [...
     0, dims(1), 0, 0, 0, dims(3);
+    0, dims(1), dims(2), dims(2), 0, dims(3);
     0, 0, 0, dims(2), 0, dims(3);
+    dims(1), dims(1), 0, dims(2), 0, dims(3);
     0, dims(1), 0, dims(2), 0, 0;
     0, dims(1), 0, dims(2), dims(3), dims(3);
     ];
@@ -99,14 +106,14 @@ m.radiation.surface = searchSurf( m,m.radiation.Elements );
 
 %% Define conductive heat transfer coefficient to gas
 m.sample.ViscousLossCoefficient = 8.2e13;
-m.sink.ViscousLossCoefficient = 3.2e17; % betw. 2-3
+m.sink.ViscousLossCoefficient = 2.9e17; % 5e17
 m.sample.MolecularLossCoefficient = 0;
 m.sink.MolecularLossCoefficient = 2;
 
 %% Define the area where the reaction takes place
 
 % Set coordinates
-react = [2.5e-3, dims(1), 0, dims(2), dims(3), dims(3)];
+react = [7.5e-3, 12.5e-3, 3e-3, 6e-3, dims(3), dims(3)];
 
 % Calculate areas
 m.reaction.Elements = areas( react,m );
@@ -116,8 +123,8 @@ m.reaction.surface = searchSurf( m,m.reaction.Elements );
 m.reaction.rate = @reactionRate2;
 
 % Initial partial pressures in Pa
-m.reaction.initialPressure_Oxy = 0;
-m.reaction.initialPressure_Hyd = 500;
+m.reaction.initialPressure_Oxy = 2e-8;
+m.reaction.initialPressure_Hyd = 0;
 
 % Ignition temperature
 m.reaction.ignitionTemperature = 450;
@@ -149,7 +156,7 @@ m.chamberVolume = 0.12;
 viewMesh( m )
 
 %% Save this mesh
-filename = 'PtFilmSample_H2_500.mat';
+filename = 'mesh_MIM_detail.mat';
 foldername = './meshes/';
 if exist( [foldername filename], 'file' )
     

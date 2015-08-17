@@ -34,6 +34,8 @@ m.material.thermalConductivity = ...
 
 % Heat Capacity at discrete temperatures
 m.material.heatCapacityValues(matIdx,:) = mat.(material).heatCapacityFcn( m.tempRange );
+% Thermal Conductivities at discrete temperatures
+m.material.thermalCondValues(matIdx,:) = mat.(material).thermalCondFcn( m.tempRange );
 
 fprintf( '\tDone.\n' )
 

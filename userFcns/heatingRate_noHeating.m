@@ -1,5 +1,5 @@
-function P = heatingRate_noHeating( time )
+function P = heatingRate_noHeating( m,t )
 
-P = time*0;
+P = t*0;
 
 end

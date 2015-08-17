@@ -3,6 +3,6 @@ function Qrad = radiative( m )
 
 sboltz = 5.670373e-8;
 
-Qrad = m.radiation.emissivity*sboltz.*m.radiation.surface.*(m.temperature - m.ambientTemperature).^4;
+Qrad = m.radiation.emissivity*sboltz.*m.radiation.surface.*(m.temperature.^4 - m.ambientTemperature.^4);
 
 end

@@ -3,6 +3,7 @@
 SiO2.density = 2203;                % kg/m^3
 SiO2.heatCapacityFcn = @heatCapacitySiO2;            % J/kg/K
 SiO2.thermalConductivity = 1.114;   % W/m/K
+SiO2.thermalCondFcn = @thermalConductivitySiO2;
 
 save('./materials/SiO2','SiO2')
 

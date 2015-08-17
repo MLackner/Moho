@@ -5,7 +5,7 @@ clc,clear,close all
 % Set the base coordinates of the volume ( x y z );
 base = [0 0 0];
 % Number of nodes in each dimension
-npd = [10 10 6];       % Nodes per dimension (x y z)
+npd = [12 12 8];       % Nodes per dimension (x y z)
 % Dimensions (x y z) in meters
 dims = [5e-3 5e-3 1.1e-3];
 % Node density calculation parameters y = a*(x - b)^2 + c
@@ -22,7 +22,7 @@ m = meshGen( base,npd,dims,a,b,c );
 
 %% Set start temperature
 
-T0 = 315;   % Kelvin
+T0 = 300;   % Kelvin
 
 % Set temperature range over which material properties are precalculated
 m.tempRange = 280:1300;    % only integer values allowed
@@ -57,12 +57,13 @@ m.sink.HS = areas( HSpos,m );
 %% Set heat sink parameters
 
 % Heat capacity of the heat sinks in J/K
-m.sink.heatCapacity = 55; % 65
+m.sink.heatCapacity = 55; % 80 was almost good 60 better
 % Temperature of the sink in K
-m.sink.temperature = 311;
+m.sink.temperature = 302.5;
 % Ambient temperature in K
 m.ambientTemperature = 300;
-% Heat loss coefficient in J/s due to conduction from the sink to the environment, i.e. the
+% Heat loss coefficient in J/s/K/Pa (Total heat loss due to conduction,
+% convection and radiation from the sink to the environment, i.e. the
 % sample holder to the chamber and the outside itself.
 m.sink.lossCoefficient = 0.0018706*m.sink.heatCapacity; %0.0018706
 
@@ -78,7 +79,7 @@ m.source.Heat = areas( HeatPos1,m );
 %% Set heat source parameters
 
 % Set a heating rate (can be a constant or a function handle)
-m.source.rate = @heatingRateFS_H2_500;
+m.source.rate = @heatingRateFS_Vac;
 
 %% Define radiative areas
 
@@ -99,7 +100,7 @@ m.radiation.surface = searchSurf( m,m.radiation.Elements );
 
 %% Define conductive heat transfer coefficient to gas
 m.sample.ViscousLossCoefficient = 8.2e13;
-m.sink.ViscousLossCoefficient = 3.2e17; % betw. 2-3
+m.sink.ViscousLossCoefficient = 2e17; % 5e17
 m.sample.MolecularLossCoefficient = 0;
 m.sink.MolecularLossCoefficient = 2;
 
@@ -116,8 +117,8 @@ m.reaction.surface = searchSurf( m,m.reaction.Elements );
 m.reaction.rate = @reactionRate2;
 
 % Initial partial pressures in Pa
-m.reaction.initialPressure_Oxy = 0;
-m.reaction.initialPressure_Hyd = 500;
+m.reaction.initialPressure_Oxy = 2e-5;
+m.reaction.initialPressure_Hyd = 0;
 
 % Ignition temperature
 m.reaction.ignitionTemperature = 450;
@@ -149,7 +150,7 @@ m.chamberVolume = 0.12;
 viewMesh( m )
 
 %% Save this mesh
-filename = 'PtFilmSample_H2_500.mat';
+filename = 'PtFilmSample_Vac2.mat';
 foldername = './meshes/';
 if exist( [foldername filename], 'file' )
     

@@ -18,7 +18,7 @@ if sp.visualize
     
     % In case of a 3D mesh
     if min( size( m.Vol ) ) > 1
-        m.temperature(1,1,1) = 400;
+        m.temperature(1,1,1) = m.temperature(1,1,1) - 1e-3;
         fh = figure('WindowStyle','docked');
         xslice = [1, size( m.Vol,2 )];
         yslice = [1, size( m.Vol,1 )];
@@ -28,7 +28,7 @@ if sp.visualize
         ylabel('Y')
         zlabel('Z')
         caxis( [m.tempRange(1) m.tempRange(end)] )
-        m.temperature(1,1,1) = 300;
+        m.temperature(1,1,1) = m.temperature(1,1,1) + 1e-3;
     end
     
     % 1D
@@ -117,7 +117,7 @@ for i=1:sp.numberSteps
                     p(j).FaceColor = 'interp';
                     p(j).LineStyle = '-';
                 end
-                caxis( [300 600] )
+                caxis( 'auto' )
                 axis equal
                 view( [t*6,30] )
                 xlabel('X')
@@ -252,17 +252,14 @@ for i=1:sp.numberSteps
     energyPostHeatSink = sum( m.energy(:) );
     % Energy that went into the heat sinks ( Mulitplicator 4 is because
     % the mesh is only 1/4 of the full one )
-    energy2sink = (energyPreHeatSink - energyPostHeatSink)*4;
+    energy2sink = (energyPreHeatSink - energyPostHeatSink)*m.scaleFactor;
     % Energy in sink
     m.sink.energy = m.sink.energy + energy2sink;
     % Heat flow from sink to the environment
     m.sink.energy = m.sink.energy - ...
         m.sink.lossCoefficient* ...
-        (m.sink.energy/m.sink.heatCapacity - m.ambientTemperature)...
-        *sp.dt;     %...
-%         .*(m.reaction.partialPressure_Oxy +...
-%         m.reaction.partialPressure_Hyd +...
-%         m.reaction.partialPressure_H2O);
+        (m.sink.energy/m.sink.heatCapacity - m.coolingTemperature)...
+        *sp.dt;
     % Temperature rise in heat sink
     m.sink.temperature = m.sink.energy/m.sink.heatCapacity;    
     
