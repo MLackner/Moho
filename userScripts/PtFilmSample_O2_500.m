@@ -121,8 +121,8 @@ m.reaction.surface = searchSurf( m,m.reaction.Elements );
 m.reaction.rate = @reactionRate2;
 
 % Initial partial pressures in Pa
-m.reaction.initialPressure_Oxy = 0;
-m.reaction.initialPressure_Hyd = 500;
+m.reaction.initialPressure_Oxy = 500;
+m.reaction.initialPressure_Hyd = 0;
 
 % Ignition temperature
 m.reaction.ignitionTemperature = 450;
@@ -154,7 +154,7 @@ m.chamberVolume = 0.12;
 viewMesh( m )
 
 %% Save this mesh
-filename = 'PtFilmSample_H2_500.mat';
+filename = 'PtFilmSample_O2_500.mat';
 foldername = './meshes/';
 if exist( [foldername filename], 'file' )
     

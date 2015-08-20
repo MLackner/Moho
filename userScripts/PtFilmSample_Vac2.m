@@ -5,7 +5,7 @@ clc,clear,close all
 % Set the base coordinates of the volume ( x y z );
 base = [0 0 0];
 % Number of nodes in each dimension
-npd = [12 12 8];       % Nodes per dimension (x y z)
+npd = [21 21 11];       % Nodes per dimension (x y z)
 % Dimensions (x y z) in meters
 dims = [5e-3 5e-3 1.1e-3];
 % Node density calculation parameters y = a*(x - b)^2 + c
@@ -39,10 +39,10 @@ m.material.index = zeros( size( m.Vol ) );
 % SiO2
 SiO2pos = [ 0, dims(1), 0, dims(2), 0, dims(3) ];
 
-m.material.SiO2.area = areas( SiO2pos,m );
+m.material.SiO2k.area = areas( SiO2pos,m );
 
 m.material.names = {};
-m = setMaterial( m, 'SiO2' );
+m = setMaterial( m, 'SiO2k' );
 
 %% Define position of heat sinks
 
@@ -62,6 +62,10 @@ m.sink.heatCapacity = 55; % 80 was almost good 60 better
 m.sink.temperature = 302.5;
 % Ambient temperature in K
 m.ambientTemperature = 300;
+% Cooling unit temperature
+m.coolingTemperature = 300;
+% Scale factor for mesh ( 1 for full, 2 for half a system, 4 for quarter )
+m.scaleFactor = 4;
 % Heat loss coefficient in J/s/K/Pa (Total heat loss due to conduction,
 % convection and radiation from the sink to the environment, i.e. the
 % sample holder to the chamber and the outside itself.
@@ -102,7 +106,7 @@ m.radiation.surface = searchSurf( m,m.radiation.Elements );
 m.sample.ViscousLossCoefficient = 8.2e13;
 m.sink.ViscousLossCoefficient = 2e17; % 5e17
 m.sample.MolecularLossCoefficient = 0;
-m.sink.MolecularLossCoefficient = 2;
+m.sink.MolecularLossCoefficient = 3;
 
 %% Define the area where the reaction takes place
 

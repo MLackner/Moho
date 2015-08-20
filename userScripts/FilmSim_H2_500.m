@@ -2,7 +2,7 @@
 clc,clear,close all
 
 %% Load mesh
-load( './meshes/PtFilmSample_H2_500.mat' )
+load( './meshes/PtFilmSample_O2_500.mat' )
 
 %% Set parameters
 sp.simTime = 1700.1;            % s
@@ -11,7 +11,7 @@ sp.numberSteps = round( sp.simTime/sp.dt );
 sp.visualize = true;
 sp.saveSteps = [0:5:sp.simTime];
 sp.saveData = true;
-sp.folderName = 'PtFilmSample_H2_500';
+sp.folderName = 'PtFilmSample_O2_500';
 
 %% Save data
 if exist( ['./data/', sp.folderName], 'dir' )

@@ -7,6 +7,15 @@ SiO2.thermalCondFcn = @thermalConductivitySiO2;
 
 save('./materials/SiO2','SiO2')
 
+%% Properties of SiO2 (BK7)
+
+SiO2k.density = 2203;                % kg/m^3
+SiO2k.heatCapacityFcn = @heatCapacitySiO2;            % J/kg/K
+SiO2k.thermalConductivity = 1.114;   % W/m/K
+SiO2k.thermalCondFcn = @thermalConductivitySiO2k;
+
+save('./materials/SiO2k','SiO2k')
+
 %% Properties of Platinum
 Pt.density = 21450;                % kg/m^3
 Pt.heatCapacityFcn = @heatCapacityPt;              % J/kg/K
