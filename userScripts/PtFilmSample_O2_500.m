@@ -25,7 +25,7 @@ m = meshGen( base,npd,dims,a,b,c );
 T0 = 315;   % Kelvin
 
 % Set temperature range over which material properties are precalculated
-m.tempRange = 280:1300;    % only integer values allowed
+m.tempRange = 280:1800;    % only integer values allowed
 m.temperature = ones( size( m.Vol ) )*T0;
 
 %% Set materials
@@ -80,7 +80,7 @@ m.source.Heat = areas( HeatPos1,m );
 %% Set heat source parameters
 
 % Set a heating rate (can be a constant or a function handle)
-m.source.rate = @heatingRateFS_H2_500;
+m.source.rate = @heatingRate_Ramp9V;
 
 %% Define radiative areas
 
@@ -118,19 +118,17 @@ m.reaction.Elements = areas( react,m );
 % Calculate surface
 m.reaction.surface = searchSurf( m,m.reaction.Elements );
 % Temperature dependent reaction rate coefficient
-m.reaction.rate = @reactionRate2;
+m.reaction.rate = @waterFormationRate;
 
 % Initial partial pressures in Pa
-m.reaction.initialPressure_Oxy = 500;
-m.reaction.initialPressure_Hyd = 0;
-
-% Ignition temperature
-m.reaction.ignitionTemperature = 450;
+m.reaction.initialPressure_Oxy = 400;
+m.reaction.initialPressure_Hyd = 100;
 
 % Heat of reaction in J/mol
 m.reaction.reactionHeat = -242e3;
 
 % Sticking coefficients
+% CAN BE DELETED. DEFINED IN FUNCTION
 m.reaction.stickingCoefficient_Oxy = 0.11;
 m.reaction.stickingCoefficient_Hyd = 0.30;
 
@@ -154,7 +152,7 @@ m.chamberVolume = 0.12;
 viewMesh( m )
 
 %% Save this mesh
-filename = 'PtFilmSample_O2_500.mat';
+filename = 'PtFilmSample_O2H2_41.mat';
 foldername = './meshes/';
 if exist( [foldername filename], 'file' )
     

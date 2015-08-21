@@ -20,6 +20,7 @@ save('./materials/SiO2k','SiO2k')
 Pt.density = 21450;                % kg/m^3
 Pt.heatCapacityFcn = @heatCapacityPt;              % J/kg/K
 Pt.thermalConductivity = 71.6;      % W/m/K
+Pt.thermalCondFcn = @thermalCondPt;
 
 save('./materials/Pt','Pt')
 

@@ -53,6 +53,8 @@ m.reactedMoles = 0;
 Qgas = 0;
 Qgas_HS = 0;
 Qind = 0;
+energy2sink = 0;
+totalPressure = 0;
 
 %% Calculation
 for i=1:sp.numberSteps
@@ -68,6 +70,12 @@ for i=1:sp.numberSteps
         runTime = toc;
         % Get thermal energy
         sumEnergy = sum( m.energy(:) );
+        % Total Energy in (doesn't account for radiation in)
+        energy_in = sum(Qind(:))/sp.dt - sum( Qhor(:) )/sp.dt;
+        % Total Energy out
+        Qgas = Qgas.*m.radiation.Elements.*m.radiation.surface;
+        Qgas = sum( Qgas(:) );
+        energy_out = Qgas/sp.dt + energy2sink/sp.dt/m.scaleFactor + sum(Qrad(:))/sp.dt;
         
         %% Print output information
         fprintf( 'Step #%g\n',i )
@@ -78,8 +86,9 @@ for i=1:sp.numberSteps
         fprintf( '\tInduced energy: %g J/s\n', sum(Qind(:))/sp.dt )
         fprintf( '\tHeating Rate: %g J/s\n', m.source.rate(m,t) )
         fprintf( '\tRadiated heat: %g J/s\n', sum(Qrad(:))/sp.dt )
-        fprintf( '\tLoss to gas (sample): %g J/s\n', sum(Qgas(:))/sp.dt )
+        fprintf( '\tLoss to gas (sample): %g J/s\n', Qgas/sp.dt )
         fprintf( '\tLoss to gas (heat sink): %g J/s\n', Qgas_HS/sp.dt )
+        fprintf( '\tLoss to sink: %g J/s\n', energy2sink/sp.dt/m.scaleFactor )
         fprintf( '\tMean tempearature: %g K\n', mean( m.temperature(:) ) )
         fprintf( '\tMaximum temperature: %g K\n', max( m.temperature(:) ) )
         fprintf( '\tMinimum temperature: %g K\n', min( m.temperature(:) ) )
@@ -89,6 +98,9 @@ for i=1:sp.numberSteps
         fprintf( '\tEnergy entry due to reaction: %g J/s\n', sum( Qhor(:) )/sp.dt )
         fprintf( '\tPartial pressure O2: %g Pa\n', m.reaction.partialPressure_Oxy )
         fprintf( '\tPartial pressure H2: %g Pa\n', m.reaction.partialPressure_Hyd )
+        fprintf( '\tTotal Pressure: %g Pa\n', totalPressure )
+        fprintf( '\tHeat in: %g W\n', energy_in )
+        fprintf( '\tHeat out: %g W\n', energy_out )
         fprintf( '\tReacted moles: %g mol\n\n', m.reactedMoles )
         
         %% Gather output information
@@ -102,17 +114,23 @@ for i=1:sp.numberSteps
         m.output.sourceTemp(fileIndex) = mean( m.temperature(m.source.Heat) );
         m.output.meanTemp(fileIndex) = mean( m.temperature(:) );
         m.output.heatRadiated(fileIndex) = sum(Qrad(:))/sp.dt;
+        m.output.heatToGas(fileIndex) = Qgas/sp.dt;
+        m.output.heatToSink(fileIndex) = energy2sink/sp.dt;
         m.output.rate(fileIndex) = sum( m.rTot(:) )/sp.dt;
+        m.output.reactionHeat(fileIndex) = sum( Qhor(:) )/sp.dt;
         m.output.partialPressure_Oxy(fileIndex) = m.reaction.partialPressure_Oxy;
         m.output.partialPressure_Hyd(fileIndex) = m.reaction.partialPressure_Hyd;
+        m.output.totalPressure(fileIndex) = totalPressure;
+        m.output.energyIn(fileIndex) = energy_in;
+        m.output.energyOut(fileIndex) = energy_out;
         
         %% View Data
         if sp.visualize
             
             if min( size( m.Vol ) ) > 1
-                m.temperature(1,1,1) = m.temperature(1,1,1) + 1e-10;
+                m.temperature(2,2,2) = m.temperature(1,1,1) + 1;
                 p = slice( m.temperature,xslice,yslice,zslice );
-                m.temperature(1,1,1) = m.temperature(1,1,1) - 1e-10;
+                m.temperature(2,2,2) = m.temperature(1,1,1) - 1;
                 for j=1:numel(p)
                     p(j).FaceColor = 'interp';
                     p(j).LineStyle = '-';
@@ -167,18 +185,18 @@ for i=1:sp.numberSteps
     %% Reaction
     
     % Water formation rate (in moles per second per each surface element)
-    r = waterFormationRate2( m );
+    r = m.reaction.rate( m );
     % Get total of reacted moles per element
-    m.rTot = r*m.reaction.surface(m.reaction.Elements)*sp.dt;
+    m.rTot = r.*m.reaction.surface*sp.dt;
     % Heat of reaction
     Qhor = m.rTot*m.reaction.reactionHeat;
     % Apply heat
-    m.energy(m.reaction.Elements) = m.energy(m.reaction.Elements) - Qhor;
+    m.energy = m.energy - Qhor;
     % Count reacted moles
-    m.reactedMoles = m.reactedMoles + m.rTot;
+    m.reactedMoles = m.reactedMoles + sum( m.rTot(:) );
     
     %% Calculate temperature
-    m.temperature = e2t( m );    
+    m.temperature = e2t( m );
     
     %% Recalculate partial pressures
     %
@@ -228,7 +246,7 @@ for i=1:sp.numberSteps
     
     % Apply
     % Sample
-    m.energy = m.energy - Qgas.*m.radiation.Elements;
+    m.energy = m.energy - Qgas.*m.radiation.surface;%m.radiation.Elements;
     % Heat Sink
     m.sink.energy = m.sink.energy - Qgas_HS;
     

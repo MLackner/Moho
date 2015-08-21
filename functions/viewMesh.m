@@ -25,6 +25,7 @@ title( 'Heat Sinks' )
 
 subplot(2,2,2)
 V = m.source.Heat * 1;
+V(2,2,2) = 0;
 xslice = [1, size( m.Vol,2 )];
 yslice = [1, size( m.Vol,1 )];
 zslice = [1, size( m.Vol,3 )];
@@ -36,6 +37,7 @@ title( 'Heat Source' )
 
 subplot(2,2,3)
 V = m.reaction.Elements * 1;
+V(2,2,2) = 0;
 xslice = [1, size( m.Vol,2 )];
 yslice = [1, size( m.Vol,1 )];
 zslice = [1, size( m.Vol,3 )];
@@ -47,6 +49,7 @@ title( 'Reactive Surface' )
 
 subplot(2,2,4)
 V = m.radiation.Elements * 1;
+V(2,2,2) = 0;
 xslice = [1, size( m.Vol,2 )];
 yslice = [1, size( m.Vol,1 )];
 zslice = [1, size( m.Vol,3 )];
@@ -60,6 +63,7 @@ title( 'Exposed Surface' )
 for i=1:4
     subplot(2,2,i)
     colormap('lines')
+    axis( 'equal' )
     caxis( [ 0 3 ] )
     view( [40 40] )
     set(gca,'LineWidth', 0.2, ...
