@@ -127,11 +127,11 @@ m.reaction.Elements = areas( react,m );
 % Calculate surface
 m.reaction.surface = searchSurf( m,m.reaction.Elements );
 % Temperature dependent reaction rate coefficient
-m.reaction.rate = @waterFormationRate;
+m.reaction.rate = @waterFormationRateN;
 
 % Initial partial pressures in Pa
-m.reaction.initialPressure_Oxy = 500/5*4;
-m.reaction.initialPressure_Hyd = 500/5*1;
+m.reaction.initialPressure_Oxy = 500/7*6;
+m.reaction.initialPressure_Hyd = 500/7*1;
 
 % Heat of reaction in J/mol
 m.reaction.reactionHeat = -242e3;
@@ -140,6 +140,10 @@ m.reaction.reactionHeat = -242e3;
 m.reaction.partialPressure_Oxy = m.reaction.initialPressure_Oxy;
 m.reaction.partialPressure_Hyd = m.reaction.initialPressure_Hyd;
 m.reaction.partialPressure_H2O = 0;
+
+% Surface Coverages
+m.reaction.surfCov_Oxy = zeros( size( m.Vol ) );
+m.reaction.surfCov_Hyd = zeros( size( m.Vol ) );;
 
 %% Other initial properties of this system
 
@@ -156,7 +160,7 @@ m.chamberVolume = 0.12;
 % viewMesh( m )
 
 %% Save this mesh
-filename = 'PtWire_WFR_41.mat';
+filename = 'PtWire_WFR_61.mat';
 foldername = './meshes/';
 if exist( [foldername filename], 'file' )
     

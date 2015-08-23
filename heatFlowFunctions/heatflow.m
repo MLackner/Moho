@@ -55,6 +55,7 @@ Qgas_HS = 0;
 Qind = 0;
 energy2sink = 0;
 totalPressure = 0;
+lim = '';
 
 %% Calculation
 for i=1:sp.numberSteps
@@ -76,6 +77,15 @@ for i=1:sp.numberSteps
         Qgas = Qgas.*m.radiation.Elements.*m.radiation.surface;
         Qgas = sum( Qgas(:) );
         energy_out = Qgas/sp.dt + energy2sink/sp.dt/m.scaleFactor + sum(Qrad(:))/sp.dt;
+        % Mean surface coverages
+        % Hydrogen
+        surfCov_Hyd = m.reaction.surfCov_Hyd(m.reaction.Elements);
+        meanSurfCov_Hyd = mean( surfCov_Hyd(:) );
+        % Oxygen
+        surfCov_Oxy = m.reaction.surfCov_Oxy(m.reaction.Elements);
+        meanSurfCov_Oxy = mean( surfCov_Oxy(:) );
+        % Total
+        meanSurfCov_Tot = meanSurfCov_Hyd + meanSurfCov_Oxy;
         
         %% Print output information
         fprintf( 'Step #%g\n',i )
@@ -101,6 +111,10 @@ for i=1:sp.numberSteps
         fprintf( '\tTotal Pressure: %g Pa\n', totalPressure )
         fprintf( '\tHeat in: %g W\n', energy_in )
         fprintf( '\tHeat out: %g W\n', energy_out )
+        fprintf( '\tMean surface coverage (O2): %g\n', meanSurfCov_Oxy )
+        fprintf( '\tMean surface coverage (H2): %g\n', meanSurfCov_Hyd )
+        fprintf( '\tMean surface coverage (Total): %g\n', meanSurfCov_Tot )
+        fprintf( '\tLimiting step: %s\n', lim )
         fprintf( '\tReacted moles: %g mol\n\n', m.reactedMoles )
         
         %% Gather output information
@@ -185,7 +199,7 @@ for i=1:sp.numberSteps
     %% Reaction
     
     % Water formation rate (in moles per second per each surface element)
-    r = m.reaction.rate( m );
+    [r,dCov_Hyd,dCov_Oxy,lim] = m.reaction.rate( m );
     % Get total of reacted moles per element
     m.rTot = r.*m.reaction.surface*sp.dt;
     % Heat of reaction
@@ -194,6 +208,14 @@ for i=1:sp.numberSteps
     m.energy = m.energy - Qhor;
     % Count reacted moles
     m.reactedMoles = m.reactedMoles + sum( m.rTot(:) );
+    % Calculate surface coverages
+    m.reaction.surfCov_Hyd = (m.reaction.surfCov_Hyd + dCov_Hyd*sp.dt).*...
+        m.reaction.Elements;
+    m.reaction.surfCov_Oxy = (m.reaction.surfCov_Oxy + dCov_Oxy*sp.dt).*...
+        m.reaction.Elements;
+    % Make sure the coverages are greater or equal to 0
+    m.reaction.surfCov_Hyd(m.reaction.surfCov_Hyd<0) = 0;
+    m.reaction.surfCov_Oxy(m.reaction.surfCov_Oxy<0) = 0;
     
     %% Calculate temperature
     m.temperature = e2t( m );
