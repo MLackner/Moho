@@ -5,8 +5,8 @@ ramp = 0.01;
 
 P = ramp*t;
 
-if P>0.9;
-    P=0.9;
+if P>0.6;
+    P=0.6;
 end
 
 

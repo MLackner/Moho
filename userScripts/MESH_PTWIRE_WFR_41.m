@@ -5,9 +5,9 @@ clc,clear,close all
 % Set the base coordinates of the volume ( x y z );
 base = [0 0 0];
 % Number of nodes in each dimension
-npd = [20 2 2];       % Nodes per dimension (x y z)
+npd = [31 2 2];       % Nodes per dimension (x y z)
 % Dimensions (x y z) in meters
-dims = [20e-3 0.1e-3 0.1e-3];
+dims = [20e-3 0.079e-3 0.079e-3];
 % Node density calculation parameters y = a*(x - b)^2 + c
 a = [0 0 0];
 b = [0.5 0.5 0.5];
@@ -127,11 +127,11 @@ m.reaction.Elements = areas( react,m );
 % Calculate surface
 m.reaction.surface = searchSurf( m,m.reaction.Elements );
 % Temperature dependent reaction rate coefficient
-m.reaction.rate = @waterFormationRate;
+m.reaction.rate = @waterFormationRateN;
 
 % Initial partial pressures in Pa
-m.reaction.initialPressure_Oxy = 500/7*6;
-m.reaction.initialPressure_Hyd = 500/7*1;
+m.reaction.initialPressure_Oxy = 500/5*4;
+m.reaction.initialPressure_Hyd = 500/5*1;
 
 % Heat of reaction in J/mol
 m.reaction.reactionHeat = -242e3;
@@ -140,6 +140,10 @@ m.reaction.reactionHeat = -242e3;
 m.reaction.partialPressure_Oxy = m.reaction.initialPressure_Oxy;
 m.reaction.partialPressure_Hyd = m.reaction.initialPressure_Hyd;
 m.reaction.partialPressure_H2O = 0;
+
+% Surface Coverages
+m.reaction.surfCov_Oxy = zeros( size( m.Vol ) ) + 0.5;
+m.reaction.surfCov_Hyd = zeros( size( m.Vol ) ) + 0.5;
 
 %% Other initial properties of this system
 
@@ -156,7 +160,7 @@ m.chamberVolume = 0.12;
 % viewMesh( m )
 
 %% Save this mesh
-filename = 'PtWire_WFR_61.mat';
+filename = 'PtWire_WFR_41.mat';
 foldername = './meshes/';
 if exist( [foldername filename], 'file' )
     

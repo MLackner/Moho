@@ -1,4 +1,4 @@
-%% Properties of SiO2 (BK7)
+:%% Properties of SiO2 (BK7)
 
 SiO2.density = 2203;                % kg/m^3
 SiO2.heatCapacityFcn = @heatCapacitySiO2;            % J/kg/K

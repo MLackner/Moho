@@ -5,7 +5,7 @@ clc,clear,close all
 % Set the base coordinates of the volume ( x y z );
 base = [0 0 0];
 % Number of nodes in each dimension
-npd = [20 2 2];       % Nodes per dimension (x y z)
+npd = [21 2 2];       % Nodes per dimension (x y z)
 % Dimensions (x y z) in meters
 dims = [20e-3 0.1e-3 0.1e-3];
 % Node density calculation parameters y = a*(x - b)^2 + c
@@ -142,8 +142,8 @@ m.reaction.partialPressure_Hyd = m.reaction.initialPressure_Hyd;
 m.reaction.partialPressure_H2O = 0;
 
 % Surface Coverages
-m.reaction.surfCov_Oxy = zeros( size( m.Vol ) );
-m.reaction.surfCov_Hyd = zeros( size( m.Vol ) );;
+m.reaction.surfCov_Oxy = zeros( size( m.Vol ) ) + 0.5;
+m.reaction.surfCov_Hyd = zeros( size( m.Vol ) ) + 0.5;
 
 %% Other initial properties of this system
 

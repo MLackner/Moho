@@ -2,16 +2,16 @@
 clc,clear,close all
 
 %% Load mesh
-load( './meshes/PtWire_WFR_61.mat' )
+load( './meshes/PtWire_WFR_11.mat' )
 
 %% Set parameters
-sp.simTime = 1500.1;            % s
-sp.dt = 5e-3;                % s
+sp.simTime = 5.1;            % s
+sp.dt = 2e-3;                % s
 sp.numberSteps = round( sp.simTime/sp.dt );
 sp.visualize = true;
-sp.saveSteps = [0:0.5:sp.simTime];
+sp.saveSteps = [0:20e-3:sp.simTime];
 sp.saveData = true;
-sp.folderName = 'PtWire_WFR_61_n';
+sp.folderName = 'PtWire_WFR_11_IGN';
 
 %% Save data
 if exist( ['./data/', sp.folderName], 'dir' )

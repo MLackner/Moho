@@ -12,12 +12,13 @@ function [r,dCov_Hyd,dCov_Oxy,lim] = waterFormationRateN( m )
 %                   ureacted gas
 
 r = zeros( size( m.Vol ) );
-SITEAREA = 1.696e-18;%4e-20;                     % Site area in m^2
+SITEAREA = 4e-20;                     % Site area in m^2
 GASCONSTANT = 8.3144621;              % Gas constant in J/mol/K
-PREEXPONENTIAL = 1e13/6e23/SITEAREA;               % Preexponential factor in mol/s/m^2
-DESORPACTENERGY = 19e3*4.184;         % Activation energy for desorption of H2
-DESORPPARAMETER = 8e3*4.184;
-OHACTENERGY = 9.2e3*4.184;                    %
+PREEXPONENTIAL = 1e13/6.022e23/SITEAREA;               % Preexponential factor in mol/s/m^2
+PREEXPONENTIAL_OH = 1e13/6.022e23/SITEAREA;
+DESORPACTENERGY = 16e3*4.1868;         % Activation energy for desorption of H2
+DESORPPARAMETER = 8e3*4.1868;
+OHACTENERGY = 54.3e3;                    %
 SURFCOV_HYD = m.reaction.surfCov_Hyd;
 SURFCOV_OXY = m.reaction.surfCov_Oxy;
 S0_Oxy = 0.11;                        % Sticking coefficient for oxygen
@@ -78,7 +79,7 @@ for i=1:numel( m.Vol )
     
     % Calculate the change in hydrogen surface coverage
         
-    if (2*Zw_Oxy*s_Oxy) > rf_Oxy(i)
+    if (SURFCOV_OXY(i) > 0.1) && (SURFCOV_HYD(i) > 0.1)
         % Formation of OH intermediate is the limiting step
         lim = 'OH formation';
         r(i) = rf_Hyd(i);
@@ -127,7 +128,7 @@ end
     function rf = reactionRate()
         % Calculate reaction rates
         
-        rf = PREEXPONENTIAL * ...
+        rf = PREEXPONENTIAL_OH * ...
             exp( -(OHACTENERGY) ...
             ./(surfTemperature*GASCONSTANT) );
         
