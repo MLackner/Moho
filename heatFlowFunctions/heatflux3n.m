@@ -4,8 +4,9 @@ function HF = heatflux3n(m,dT,dt)
 % function)
 Q = zeros(size(dT));
 
-% for MIM
+
 [~,k] = lookupHeatCap( m );
+
 for i=1:6
     Q(:,:,:,i) = - k(:,:,:) ...
         .*dT(:,:,:,i)./m.dist(:,:,:,i).*m.A(:,:,:,ceil(i/2))*dt;
