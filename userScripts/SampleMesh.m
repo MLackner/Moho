@@ -5,7 +5,7 @@ clc,clear,close all
 % Set the base coordinates of the volume ( x y z );
 base = [0 0 0];
 % Number of nodes in each dimension
-npd = [9 9 9];       % Nodes per dimension (x y z)
+npd = [31 31 11];       % Nodes per dimension (x y z)
 % Dimensions (x y z) in meters
 dims = [20e-3 10e-3 40e-3];
 % Node density calculation parameters y = a*(x - b)^2 + c
@@ -36,22 +36,16 @@ m.material.heatCapacityFcn = cell( size( m.Vol ) );
 m.material.heatCapacity = zeros( [size( m.Vol ), numel( m.tempRange )] );
 m.material.index = zeros( size( m.Vol ) );
 
-% Pt
-Ptpos = [ 0, dims(1), 0, dims(2), dims(3)/1.5, dims(3) ];
-
 % SiO2
-SiO2pos = [ 0, dims(1), 0, dims(2), 0, dims(3)/2];
+SiO2pos = [ 0, dims(1), 0, dims(2), 0, dims(3)];
 
-m.material.Pt.area = areas( Ptpos,m );
 m.material.SiO2.area = areas( SiO2pos,m );
 
 m.material.names = {};
-m = setMaterial( m, 'Pt' );
 m = setMaterial( m, 'SiO2' );
 
 m.material.boundConductance = ...
-    [0 40e6;
-    40e6 0];
+    [inf];
 
 %% Define position of heat sinks
 

@@ -5,11 +5,11 @@ clc,clear,close all
 load( './meshes/SampleMesh.mat' )
 
 %% Set parameters
-sp.simTime = 20.1;            % s
+sp.simTime = 60.1;            % s
 sp.dt = 10e-3;                % s
 sp.numberSteps = round( sp.simTime/sp.dt );
 sp.visualize = true;
-sp.saveSteps = [0:0.2:sp.simTime];
+sp.saveSteps = [0:5:sp.simTime];
 sp.saveData = true;
 sp.folderName = 'SampleData';
 
